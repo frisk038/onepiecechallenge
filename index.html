@@ -109,6 +109,19 @@
     }
 
     #file { display: none; }
+
+    /* Add vertical air between cards (mobile-first) */
+  @media (max-width: 768px) {
+  .row {
+    gap: 100px; /* more space between cards */
+  }
+
+  .card {
+    margin-bottom: 12px; /* extra breathing room */
+  }
+}
+
+
   </style>
 </head>
 <body>
