@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Frisk OP Challenge</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      width: 360px;
+    }
+
+    .pick {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0 18px;
+    }
+
+    .btn {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background: white;
+    }
+
+    .hint { color: #666; font-size: 14px; }
+
+    /* Important: rendu pixel net */
+    canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      background: #f6f6f6;
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      background: #f6f6f6;
+      display: block;
+    }
+
+    /* input file caché (donc pas de nom de fichier visible) */
+    #file { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Frisk OP Challenge</h1>
+
+  <div class="pick">
+    <button class="btn" id="pickBtn" type="button">Choisir une image</button>
+    <span class="hint" id="status">Aucune image sélectionnée</span>
+    <input id="file" type="file" accept="image/*" />
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <h2>Hard</h2>
+      <canvas id="outBig"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Mid</h2>
+      <canvas id="outMid"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Easy</h2>
+      <canvas id="outEasy"></canvas>
+    </div>
+
+    <!-- Original à la fin -->
+    <div class="card">
+      <h2>Original</h2>
+      <img id="preview" alt="Aperçu original" />
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById("file");
+    const pickBtn = document.getElementById("pickBtn");
+    const statusEl = document.getElementById("status");
+
+    const preview = document.getElementById("preview");
+    const outBig = document.getElementById("outBig");
+    const outMid = document.getElementById("outMid");
+    const outEasy = document.getElementById("outEasy");
+
+    // Plus le nombre est GRAND, plus les pixels sont GROS.
+    // Ici: Hard = plus pixelisé, Easy = moins pixelisé
+    const HARD_PIXEL_SIZE = 200;
+    const MID_PIXEL_SIZE  = 100;
+    const EASY_PIXEL_SIZE = 65;
+
+    pickBtn.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      statusEl.textContent = "Image chargée ✅";
+
+      // Lecture robuste en DataURL (évite les soucis d'ObjectURL/revoke)
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result;
+
+        preview.src = dataUrl;
+
+        const img = new Image();
+        img.onload = () => {
+          pixelateToCanvas(img, outBig, HARD_PIXEL_SIZE);
+          pixelateToCanvas(img, outMid, MID_PIXEL_SIZE);
+          pixelateToCanvas(img, outEasy, EASY_PIXEL_SIZE);
+        };
+        img.onerror = () => {
+          statusEl.textContent = "Erreur de chargement ❌";
+        };
+        img.src = dataUrl;
+      };
+      reader.onerror = () => {
+        statusEl.textContent = "Erreur de lecture ❌";
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function pixelateToCanvas(img, canvas, pixelSize) {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+
+      if (!w || !h) return;
+
+      // Canvas en résolution réelle (mais affiché réduit via CSS width:100%)
+      canvas.width = w;
+      canvas.height = h;
+
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+
+      // Downscale -> mini image
+      const smallW = Math.max(1, Math.floor(w / pixelSize));
+      const smallH = Math.max(1, Math.floor(h / pixelSize));
+
+      const tmp = document.createElement("canvas");
+      tmp.width = smallW;
+      tmp.height = smallH;
+
+      const tctx = tmp.getContext("2d");
+      tctx.imageSmoothingEnabled = false;
+
+      tctx.clearRect(0, 0, smallW, smallH);
+      tctx.drawImage(img, 0, 0, smallW, smallH);
+
+      // Upscale -> gros pixels
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(tmp, 0, 0, smallW, smallH, 0, 0, w, h);
+    }
+  </script>
+</body>
+</html>
