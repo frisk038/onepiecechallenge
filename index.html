@@ -3,23 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Frisk OnePiece Challenge</title>
+  <title>Frisk OPC Challenge</title>
   <style>
     :root{
+      /* Palette moderne (clair + accent) */
       --bg: #0b1220;
       --surface: rgba(255,255,255,.06);
-      --border: rgba(255,255,255,.16);
+      --surface-2: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.14);
       --text: #eaf0ff;
       --muted: rgba(234,240,255,.72);
-      --radius: 20px;
+      --accent: #7c3aed;      /* violet */
+      --accent-2: #06b6d4;    /* cyan */
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 16px;
     }
 
-    *{ box-sizing:border-box; }
-    html{ scroll-behavior:smooth; }
-
-    body{
-      margin: 18px;
+    * { box-sizing: border-box; }
+    body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 24px;
       color: var(--text);
       background:
         radial-gradient(900px 400px at 10% 0%, rgba(124,58,237,.28), transparent 55%),
@@ -30,106 +33,82 @@
     }
 
     h1{
-      margin: 0 0 12px;
-      font-size: 32px;
+      margin: 0 0 14px;
+      font-size: 34px;
       letter-spacing: -0.02em;
     }
 
-    .pick{
-      top: 10px;
-      z-index: 10;
+    .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
 
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      margin: 4px 0 16px;
-      padding: 9px 12px;
+    .card {
+      width: 360px;
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--surface), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2{
+      margin: 0 0 12px;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .pick {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin: 6px 0 18px;
+      padding: 10px 12px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
       backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
 
-    .btn{
-      padding: 9px 14px;
+    .btn {
+      padding: 10px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.18);
       cursor: pointer;
       color: var(--text);
-      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(6,182,212,.85));
       box-shadow: 0 10px 24px rgba(0,0,0,.35);
-      white-space: nowrap;
-      font-size: 14px;
+      transition: transform .12s ease, filter .12s ease;
     }
-    .btn:active{ transform: translateY(1px); }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .btn:active { transform: translateY(0px); filter: brightness(.98); }
 
-    .hint{ color: var(--muted); font-size: 13px; }
+    .hint { color: var(--muted); font-size: 14px; }
 
-    /* ✅ Mobile-first : 1 carte par écran, sans gros vide */
-    .row{
-      display:flex;
-      flex-direction: column;
-      gap: 28px;
-      scroll-snap-type: y mandatory;
-      padding-bottom: 32px;
-    }
-
-    .card{
-      width: 100%;
-      height: calc(100vh - 150px);   /* carte ≈ plein écran */
-      padding: 14px 12px 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--surface), rgba(255,255,255,.03));
-      backdrop-filter: blur(10px);
-      box-shadow: 0 18px 40px rgba(0,0,0,.45);
-
-      display:flex;
-      flex-direction: column;
-
-      scroll-snap-align: start;
-      scroll-margin-top: 12px;
-    }
-
-    .card h2{
-      margin: 2px 4px 10px;
-      font-size: 22px;
-      letter-spacing: -0.01em;
-    }
-
-    /* Conteneur de l’image : plus de bordure entre le titre et l’image */
+    /* Zone image/canvas */
     .media{
-      flex: 1;
-      min-height: 0;
-      margin-top: 4px;
-
-      border-radius: 18px;
+      border-radius: calc(var(--radius) - 6px);
       overflow: hidden;
-      background: #ffffff;
-      /* PAS de border ici -> bye la ligne en trop */
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 0;
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
     }
 
-    /* L’image/canvas remplit la carte verticalement */
-    canvas, img{
-      max-width: 100%;
-      max-height: 100%;
-      width: auto;
-      height: 100%;        /* prend la hauteur dispo → moins de vide */
-      display:block;
-      background: #ffffff;
-      border-radius: 0;
-    }
-
-    canvas{
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: transparent;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
     }
 
-    #file{ display:none; }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: transparent;
+    }
+
+    #file { display: none; }
   </style>
 </head>
 <body>
@@ -157,6 +136,7 @@
       <div class="media"><canvas id="outEasy"></canvas></div>
     </div>
 
+    <!-- Original à la fin -->
     <div class="card">
       <h2>Original</h2>
       <div class="media"><img id="preview" alt="Aperçu original" /></div>
