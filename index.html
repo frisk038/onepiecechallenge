@@ -68,47 +68,64 @@
   .row{
     display:flex;
     flex-direction: column;
-    gap: 72px;                 /* gros espace entre cartes */
+    gap: 22px;                 /* petit espace entre cartes */
     scroll-snap-type: y mandatory;
   }
 
   .card{
     width: 100%;
-    min-height: calc(100vh - 170px); /* ~1 écran (titre + pick) */
-    padding: 16px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: linear-gradient(180deg, var(--surface), rgba(255,255,255,.03));
-    box-shadow: var(--shadow);
+    height: calc(100vh - 150px);   /* ajuste si besoin selon ton header */
+    padding: 14px;
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    box-shadow: 0 18px 50px rgba(0,0,0,.45);
     backdrop-filter: blur(10px);
 
     display:flex;
     flex-direction: column;
-    justify-content: center;
+    align-items: stretch;
 
     scroll-snap-align: start;
     scroll-margin-top: 16px;
+
+    /* IMPORTANT : on évite le gros vide en retirant le centrage */
+    justify-content: flex-start;
   }
 
+  /* Titre plus compact */
   .card h2{
-    margin: 0 0 14px;
-    font-size: 26px;
+    margin: 4px 2px 12px;
+    font-size: 24px;
     letter-spacing: -0.01em;
   }
 
   .media{
-    border-radius: calc(var(--radius) - 6px);
+    flex: 1;                      /* prend tout le reste de la carte */
+    min-height: 0;                /* permet de shrink correctement */
+    border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,.10);
     background: rgba(255,255,255,.03);
+
+    display:flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px;                /* petit breathing room */
   }
 
   canvas, img{
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
     display:block;
+    border-radius: 12px;
+    background: #fff;             /* garde ton fond blanc d'image si tu veux */
   }
 
+  /* canvas pixel net */
   canvas{
     image-rendering: pixelated;
     image-rendering: crisp-edges;
