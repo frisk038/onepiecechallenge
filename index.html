@@ -108,8 +108,6 @@
       background: transparent;
     }
 
-    #file { display: none; }
-
     /* Add vertical air between cards (mobile-first) */
   @media (max-width: 768px) {
   .row {
@@ -128,9 +126,8 @@
   <h1>Frisk OnePiece Challenge</h1>
 
   <div class="pick">
-    <button class="btn" id="pickBtn" type="button">Choisir une image</button>
-    <span class="hint" id="status">Aucune image sélectionnée</span>
-    <input id="file" type="file" accept="image/*" />
+    <button class="btn" id="pickBtn" type="button">Nouvelle image</button>
+    <span class="hint" id="status">Chargement…</span>
   </div>
 
   <div class="row">
@@ -157,49 +154,54 @@
   </div>
 
   <script>
-    const fileInput = document.getElementById("file");
-    const pickBtn = document.getElementById("pickBtn");
-    const statusEl = document.getElementById("status");
+    const IMAGES = [
+      "ace","aokiji","arlong","bb","bn","boa","bonclay","borsalino",
+      "brook","croco","dofla","ener","franky","katakuri","kid","kuma",
+      "luffy","marco","mihawk","mom","nami","oden","perona","rayleigh",
+      "robin","robluci","roger","sabo","sakazuki","sanji","shanks",
+      "smoker","vega","vivi","yamato"
+    ];
 
-    const preview = document.getElementById("preview");
-    const outBig = document.getElementById("outBig");
-    const outMid = document.getElementById("outMid");
-    const outEasy = document.getElementById("outEasy");
+    const pickBtn  = document.getElementById("pickBtn");
+    const statusEl = document.getElementById("status");
+    const preview  = document.getElementById("preview");
+    const outBig   = document.getElementById("outBig");
+    const outMid   = document.getElementById("outMid");
+    const outEasy  = document.getElementById("outEasy");
 
     const HARD_PIXEL_SIZE = 200;
     const MID_PIXEL_SIZE  = 100;
     const EASY_PIXEL_SIZE = 65;
 
-    pickBtn.addEventListener("click", () => fileInput.click());
+    let lastPick = null;
 
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files?.[0];
-      if (!file) return;
+    function pickRandom() {
+      let pick;
+      do { pick = IMAGES[Math.floor(Math.random() * IMAGES.length)]; }
+      while (pick === lastPick && IMAGES.length > 1);
+      lastPick = pick;
+      return pick;
+    }
 
-      statusEl.textContent = "Image chargée ✅";
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result;
-
-        preview.src = dataUrl;
-
-        const img = new Image();
-        img.onload = () => {
-          pixelateToCanvas(img, outBig, HARD_PIXEL_SIZE);
-          pixelateToCanvas(img, outMid, MID_PIXEL_SIZE);
-          pixelateToCanvas(img, outEasy, EASY_PIXEL_SIZE);
-        };
-        img.onerror = () => {
-          statusEl.textContent = "Erreur de chargement ❌";
-        };
-        img.src = dataUrl;
+    function loadImage(name) {
+      statusEl.textContent = "Chargement…";
+      const img = new Image();
+      img.onload = () => {
+        preview.src = img.src;
+        pixelateToCanvas(img, outBig,  HARD_PIXEL_SIZE);
+        pixelateToCanvas(img, outMid,  MID_PIXEL_SIZE);
+        pixelateToCanvas(img, outEasy, EASY_PIXEL_SIZE);
+        statusEl.textContent = "Image chargée ✅";
       };
-      reader.onerror = () => {
-        statusEl.textContent = "Erreur de lecture ❌";
+      img.onerror = () => {
+        statusEl.textContent = "Erreur de chargement ❌";
       };
-      reader.readAsDataURL(file);
-    });
+      img.src = "data/" + name + ".JPG";
+    }
+
+    pickBtn.addEventListener("click", () => loadImage(pickRandom()));
+
+    loadImage(pickRandom());
 
     function pixelateToCanvas(img, canvas, pixelSize) {
       const w = img.naturalWidth;
