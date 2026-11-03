@@ -67,8 +67,6 @@
     .btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
     .btn:active { transform: translateY(0px); filter: brightness(.98); }
 
-    .hint { color: var(--muted); font-size: 14px; }
-
     /* Single card + nav */
     .stage {
       display: flex;
@@ -152,7 +150,6 @@
 
   <div class="pick">
     <button class="btn" id="pickBtn" type="button">Nouvelle image</button>
-    <span class="hint" id="status">Chargement…</span>
   </div>
 
   <div class="stage">
@@ -191,7 +188,7 @@
     ];
 
     const pickBtn   = document.getElementById("pickBtn");
-    const statusEl  = document.getElementById("status");
+
     const prevBtn   = document.getElementById("prevBtn");
     const nextBtn   = document.getElementById("nextBtn");
     const levelTitle = document.getElementById("levelTitle");
@@ -227,7 +224,6 @@
     }
 
     function loadImage(name) {
-      statusEl.textContent = "Chargement…";
       currentLevel = 0;
       const img = new Image();
       img.onload = () => {
@@ -236,9 +232,8 @@
         pixelateToCanvas(img, outMid,  MID_PIXEL_SIZE);
         pixelateToCanvas(img, outEasy, EASY_PIXEL_SIZE);
         showLevel(0);
-        statusEl.textContent = "Image chargée ✅";
       };
-      img.onerror = () => { statusEl.textContent = "Erreur de chargement ❌"; };
+      img.onerror = () => {};
       img.src = "data/" + name + ".JPG";
     }
 
