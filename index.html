@@ -6,15 +6,13 @@
   <title>Frisk OPC Challenge</title>
   <style>
     :root{
-      /* Palette moderne (clair + accent) */
       --bg: #0b1220;
       --surface: rgba(255,255,255,.06);
-      --surface-2: rgba(255,255,255,.10);
       --border: rgba(255,255,255,.14);
       --text: #eaf0ff;
       --muted: rgba(234,240,255,.72);
-      --accent: #7c3aed;      /* violet */
-      --accent-2: #06b6d4;    /* cyan */
+      --accent: #7c3aed;
+      --accent-2: #06b6d4;
       --shadow: 0 18px 50px rgba(0,0,0,.45);
       --radius: 16px;
     }
@@ -22,7 +20,8 @@
     * { box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 24px;
+      margin: 0;
+      padding: 24px;
       color: var(--text);
       background:
         radial-gradient(900px 400px at 10% 0%, rgba(124,58,237,.28), transparent 55%),
@@ -30,37 +29,22 @@
         radial-gradient(700px 520px at 40% 110%, rgba(124,58,237,.16), transparent 60%),
         var(--bg);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    h1{
-      margin: 0 0 14px;
+    h1 {
+      margin: 0 0 20px;
       font-size: 34px;
       letter-spacing: -0.02em;
-    }
-
-    .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
-
-    .card {
-      width: 360px;
-      padding: 16px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--surface), rgba(255,255,255,.03));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    .card h2{
-      margin: 0 0 12px;
-      font-size: 20px;
-      letter-spacing: -0.01em;
     }
 
     .pick {
       display: inline-flex;
       align-items: center;
       gap: 12px;
-      margin: 6px 0 18px;
+      margin: 0 0 24px;
       padding: 10px 12px;
       border-radius: 999px;
       border: 1px solid var(--border);
@@ -78,48 +62,89 @@
       background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(6,182,212,.85));
       box-shadow: 0 10px 24px rgba(0,0,0,.35);
       transition: transform .12s ease, filter .12s ease;
+      font-size: 15px;
     }
     .btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
     .btn:active { transform: translateY(0px); filter: brightness(.98); }
 
     .hint { color: var(--muted); font-size: 14px; }
 
-    /* Zone image/canvas */
-    .media{
+    /* Single card + nav */
+    .stage {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .card {
+      width: 360px;
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--surface), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 12px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .step-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .media {
       border-radius: calc(var(--radius) - 6px);
       overflow: hidden;
       border: 1px solid rgba(255,255,255,.10);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
     }
 
-    canvas {
+    canvas, img {
       width: 100%;
       height: auto;
       display: block;
       background: transparent;
+    }
+    canvas {
       image-rendering: pixelated;
       image-rendering: crisp-edges;
     }
 
-    img {
-      width: 100%;
-      height: auto;
-      display: block;
-      background: transparent;
+    .arrow-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(124,58,237,.7), rgba(6,182,212,.6));
+      color: var(--text);
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,.35);
+      transition: transform .12s ease, filter .12s ease;
+      flex-shrink: 0;
     }
+    .arrow-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .arrow-btn:active { transform: translateY(0); filter: brightness(.95); }
+    .arrow-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
 
-    /* Add vertical air between cards (mobile-first) */
-  @media (max-width: 768px) {
-  .row {
-    gap: 100px; /* more space between cards */
-  }
-
-  .card {
-    margin-bottom: 12px; /* extra breathing room */
-  }
-}
-
-
+    @media (max-width: 520px) {
+      .card { width: calc(100vw - 96px - 32px); }
+    }
   </style>
 </head>
 <body>
@@ -130,27 +155,23 @@
     <span class="hint" id="status">Chargement…</span>
   </div>
 
-  <div class="row">
-    <div class="card">
-      <h2>Hard</h2>
-      <div class="media"><canvas id="outBig"></canvas></div>
-    </div>
+  <div class="stage">
+    <button class="arrow-btn" id="prevBtn" disabled title="Précédent">&#8592;</button>
 
     <div class="card">
-      <h2>Mid</h2>
-      <div class="media"><canvas id="outMid"></canvas></div>
+      <div class="card-header">
+        <h2 id="levelTitle">Hard</h2>
+        <span class="step-label" id="stepLabel">1 / 4</span>
+      </div>
+      <div class="media">
+        <canvas id="outBig"></canvas>
+        <canvas id="outMid" style="display:none"></canvas>
+        <canvas id="outEasy" style="display:none"></canvas>
+        <img id="preview" alt="Aperçu original" style="display:none" />
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Easy</h2>
-      <div class="media"><canvas id="outEasy"></canvas></div>
-    </div>
-
-    <!-- Original à la fin -->
-    <div class="card">
-      <h2>Original</h2>
-      <div class="media"><img id="preview" alt="Aperçu original" /></div>
-    </div>
+    <button class="arrow-btn" id="nextBtn" title="Niveau suivant">&#8594;</button>
   </div>
 
   <script>
@@ -162,18 +183,31 @@
       "smoker","vega","vivi","yamato"
     ];
 
-    const pickBtn  = document.getElementById("pickBtn");
-    const statusEl = document.getElementById("status");
-    const preview  = document.getElementById("preview");
-    const outBig   = document.getElementById("outBig");
-    const outMid   = document.getElementById("outMid");
-    const outEasy  = document.getElementById("outEasy");
+    const LEVELS = [
+      { title: "Hard",     el: () => outBig   },
+      { title: "Mid",      el: () => outMid   },
+      { title: "Easy",     el: () => outEasy  },
+      { title: "Original", el: () => preview  },
+    ];
+
+    const pickBtn   = document.getElementById("pickBtn");
+    const statusEl  = document.getElementById("status");
+    const prevBtn   = document.getElementById("prevBtn");
+    const nextBtn   = document.getElementById("nextBtn");
+    const levelTitle = document.getElementById("levelTitle");
+    const stepLabel  = document.getElementById("stepLabel");
+
+    const outBig  = document.getElementById("outBig");
+    const outMid  = document.getElementById("outMid");
+    const outEasy = document.getElementById("outEasy");
+    const preview = document.getElementById("preview");
 
     const HARD_PIXEL_SIZE = 200;
     const MID_PIXEL_SIZE  = 100;
     const EASY_PIXEL_SIZE = 65;
 
     let lastPick = null;
+    let currentLevel = 0;
 
     function pickRandom() {
       let pick;
@@ -183,23 +217,34 @@
       return pick;
     }
 
+    function showLevel(index) {
+      currentLevel = index;
+      LEVELS.forEach((l, i) => { l.el().style.display = i === index ? "block" : "none"; });
+      levelTitle.textContent = LEVELS[index].title;
+      stepLabel.textContent  = (index + 1) + " / " + LEVELS.length;
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === LEVELS.length - 1;
+    }
+
     function loadImage(name) {
       statusEl.textContent = "Chargement…";
+      currentLevel = 0;
       const img = new Image();
       img.onload = () => {
         preview.src = img.src;
         pixelateToCanvas(img, outBig,  HARD_PIXEL_SIZE);
         pixelateToCanvas(img, outMid,  MID_PIXEL_SIZE);
         pixelateToCanvas(img, outEasy, EASY_PIXEL_SIZE);
+        showLevel(0);
         statusEl.textContent = "Image chargée ✅";
       };
-      img.onerror = () => {
-        statusEl.textContent = "Erreur de chargement ❌";
-      };
+      img.onerror = () => { statusEl.textContent = "Erreur de chargement ❌"; };
       img.src = "data/" + name + ".JPG";
     }
 
     pickBtn.addEventListener("click", () => loadImage(pickRandom()));
+    prevBtn.addEventListener("click", () => showLevel(currentLevel - 1));
+    nextBtn.addEventListener("click", () => showLevel(currentLevel + 1));
 
     loadImage(pickRandom());
 
@@ -207,27 +252,18 @@
       const w = img.naturalWidth;
       const h = img.naturalHeight;
       if (!w || !h) return;
-
-      canvas.width = w;
+      canvas.width  = w;
       canvas.height = h;
-
       const ctx = canvas.getContext("2d");
       ctx.imageSmoothingEnabled = false;
-
       const smallW = Math.max(1, Math.floor(w / pixelSize));
       const smallH = Math.max(1, Math.floor(h / pixelSize));
-
-      const tmp = document.createElement("canvas");
-      tmp.width = smallW;
+      const tmp  = document.createElement("canvas");
+      tmp.width  = smallW;
       tmp.height = smallH;
-
       const tctx = tmp.getContext("2d");
       tctx.imageSmoothingEnabled = false;
-
-      tctx.clearRect(0, 0, smallW, smallH);
       tctx.drawImage(img, 0, 0, smallW, smallH);
-
-      ctx.clearRect(0, 0, w, h);
       ctx.drawImage(tmp, 0, 0, smallW, smallH, 0, 0, w, h);
     }
   </script>
